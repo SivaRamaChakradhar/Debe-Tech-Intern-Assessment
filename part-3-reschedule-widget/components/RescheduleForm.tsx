@@ -1,5 +1,7 @@
 "use client";
 
+const today = new Date().toISOString().split("T")[0]
+
 import { TutoringSession } from '@/types/session';
 import { validateRescheduleTime } from "@/lib/validation";
 import { localDateTimeToUTC } from '@/lib/dateTime';
@@ -23,41 +25,50 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>,) => {
     event.preventDefault();
 
-    if(!date || !time || !reason){
-        setError("Please complete all fields");
-        return;
+    setError("");
+
+    if (!date || !time || !reason) {
+      setError("Please complete all fields.");
+      return;
     }
 
-    const utcDateTime = localDateTimeToUTC(
+    try {
+      const utcDateTime = localDateTimeToUTC(
         date,
         time,
         "+05:30",
-    );
+      );
 
-    const selectedDateTime = new Date(utcDateTime);
-    const currentSessionDateTime = new Date(session.datetime)
+      const selectedDateTime = new Date(utcDateTime);
+      const currentSessionDateTime = new Date(
+        session.datetime,
+      );
 
-    const validationError = validateRescheduleTime({
+      const validationError = validateRescheduleTime({
         selectedDateTime,
         currentSessionDateTime,
-    })
+      });
 
-    if(validationError){
+      if (validationError) {
         setError(validationError);
         return;
-    }
+      }
 
-    console.log("Valid Reschedule: ", {
+      console.log("Valid reschedule:", {
+        sessionId: session.id,
         date,
         time,
         reason,
-        selectedDateTime,
-    });
-
-  }
+        utcDateTime,
+      });
+    } catch (error) {
+      console.error("Failed to prepare reschedule:", error);
+      setError("Unable to process the selected date and time.");
+    }
+  };
 
   return (
     <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -77,6 +88,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
           <input
             id="date"
             type="date"
+            min={today}
             value={date}
             onChange={(e)=>setDate(e.target.value)}
             className="w-full rounded-lg border text-black border-gray-300 px-3 py-2 outline-none focus:border-black"
@@ -127,6 +139,9 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
         </div>
 
         <div className="flex gap-3">
+          <p className="text-sm text-gray-500">
+            Rescheduled sessions must be at least 2 hours from now.
+          </p>
           <button
             type="button"
             onClick={onCancel}
@@ -142,7 +157,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
             Request Reschedule
           </button>
         </div>
-        {error && (<p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>)}
+        {error && (<p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>)}
       </form>
     </div>
   );

@@ -7,6 +7,9 @@ interface RescheduleValidationInput {
 }
 
 export const validateRescheduleTime = ({ selectedDateTime, currentSessionDateTime, now = new Date(),}: RescheduleValidationInput): string | null => {
+  if (Number.isNaN(selectedDateTime.getTime())) {
+    return "Please select a valid date and time.";
+  }
   if (
     selectedDateTime.getTime() ===
     currentSessionDateTime.getTime()
