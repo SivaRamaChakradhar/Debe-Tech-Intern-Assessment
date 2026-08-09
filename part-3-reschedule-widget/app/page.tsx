@@ -1,7 +1,19 @@
-import { SessionCard } from "@/components/SessionCard";
+"use client";
+
+import { useState } from "react";
+import { SessionCard }from "@/components/SessionCard";
+import { RescheduleForm } from "@/components/RescheduleForm";
 import { upcomingSessions } from "@/lib/mockSessions";
 
 export default function Home() {
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null
+  );
+
+  const selectedSession = upcomingSessions.find(
+    (session) => session.id === selectedSessionId
+  );
+
   return (
     <main className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="mx-auto max-w-5xl">
@@ -22,9 +34,19 @@ export default function Home() {
 
         <section className="grid gap-5 md:grid-cols-3">
           {upcomingSessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
+            <SessionCard
+              key={session.id}
+              session={session}
+              onReschedule={() => setSelectedSessionId(session.id)}
+            />
           ))}
         </section>
+
+        {selectedSession && (
+          <RescheduleForm
+            onCancel={() => setSelectedSessionId(null)}
+          />
+        )}
       </div>
     </main>
   );
