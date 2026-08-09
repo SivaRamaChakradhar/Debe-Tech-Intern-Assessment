@@ -1,11 +1,10 @@
 "use client";
 
-const today = new Date().toISOString().split("T")[0]
-
 import { TutoringSession } from '@/types/session';
 import { validateRescheduleTime } from "@/lib/validation";
 import { localDateTimeToUTC } from '@/lib/dateTime';
-import { RescheduleReason } from '@/types/reschedule';
+import { RescheduleReason, RescheduleRequest } from '@/types/reschedule';
+import { requestReschedule } from "@/function/requestreschedule";
 import { useState } from 'react';
 
 interface RescheduleFormProps {
@@ -26,13 +25,19 @@ const reasons: {
 export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [reason, setReason] = useState<RescheduleReason | "">("");;
+  const [reason, setReason] = useState<RescheduleReason | "">("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>,) => {
+  const [isSubmitting, setisSubmitting] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  const today = new Date().toISOString().split("T")[0]
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>,) => {
     event.preventDefault();
 
     setError("");
+    setSuccess("");
 
     if (!date || !time || !reason) {
       setError("Please complete all fields.");
@@ -60,17 +65,28 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
         setError(validationError);
         return;
       }
-
-      console.log("Valid reschedule:", {
+      const request: RescheduleRequest = {
         sessionId: session.id,
-        date,
-        time,
+        newDateTimeUtc: utcDateTime,
         reason,
-        utcDateTime,
-      });
+      }
+      const response = await requestReschedule(request);
+
+      if (!response.success) {
+        setError(response.message);
+        return;
+      }
+
+      setSuccess(response.message);
+
+      setDate("");
+      setTime("");
     } catch (error) {
       console.error("Failed to prepare reschedule:", error);
       setError("Unable to process the selected date and time.");
+    }
+    finally{
+        setisSubmitting(false);
     }
   };
 
@@ -142,10 +158,29 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
           </select>
         </div>
 
-        <div className="flex gap-3">
-          <p className="text-sm text-gray-500">
-            Rescheduled sessions must be at least 2 hours from now.
+        <p className="text-sm text-gray-500">
+           Rescheduled sessions must be at least 2 hours from now.
+        </p>
+
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
+            {error}
           </p>
+        )}
+
+        {success && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {success}
+          </p>
+        )}
+
+        <div className="flex gap-3">
           <button
             type="button"
             onClick={onCancel}
@@ -161,7 +196,6 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
             Request Reschedule
           </button>
         </div>
-        {error && (<p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>)}
       </form>
     </div>
   );
