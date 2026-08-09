@@ -184,6 +184,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
           <button
             type="button"
             onClick={onCancel}
+            disabled={isSubmitting}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancel
@@ -191,9 +192,12 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
 
           <button
             type="submit"
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            disabled={isSubmitting}
+            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Request Reschedule
+            {isSubmitting
+              ? "Submitting..."
+              : "Request Reschedule"}
           </button>
         </div>
       </form>
