@@ -5,6 +5,7 @@ const today = new Date().toISOString().split("T")[0]
 import { TutoringSession } from '@/types/session';
 import { validateRescheduleTime } from "@/lib/validation";
 import { localDateTimeToUTC } from '@/lib/dateTime';
+import { RescheduleReason } from '@/types/reschedule';
 import { useState } from 'react';
 
 interface RescheduleFormProps {
@@ -12,7 +13,10 @@ interface RescheduleFormProps {
   onCancel: () => void;
 }
 
-const reasons = [
+const reasons: {
+  id: RescheduleReason;
+  displayName: string;
+}[] = [
   { id: "CONFLICT", displayName: "Conflict" },
   { id: "ILLNESS", displayName: "Illness" },
   { id: "TIME_ZONE", displayName: "Time zone" },
@@ -22,7 +26,7 @@ const reasons = [
 export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState<RescheduleReason | "">("");;
   const [error, setError] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>,) => {
@@ -123,7 +127,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
           <select
             id="reason"
             value={reason}
-            onChange = {e => setReason(e.target.value)}
+            onChange = {e => setReason(e.target.value as RescheduleReason)}
             className="text-black w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-black"
           >
             <option value="" disabled>
