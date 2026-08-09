@@ -1,8 +1,12 @@
 "use client";
 
+import { TutoringSession } from '@/types/session';
+import { validateRescheduleTime } from "@/lib/validation";
+import { localDateTimeToUTC } from '@/lib/dateTime';
 import { useState } from 'react';
 
 interface RescheduleFormProps {
+  session: TutoringSession;
   onCancel: () => void;
 }
 
@@ -13,10 +17,47 @@ const reasons = [
   { id: "OTHER", displayName: "Other" },
 ];
 
-export const RescheduleForm = ({ onCancel }: RescheduleFormProps) => {
+export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if(!date || !time || !reason){
+        setError("Please complete all fields");
+        return;
+    }
+
+    const utcDateTime = localDateTimeToUTC(
+        date,
+        time,
+        "+05:30",
+    );
+
+    const selectedDateTime = new Date(utcDateTime);
+    const currentSessionDateTime = new Date(session.datetime)
+
+    const validationError = validateRescheduleTime({
+        selectedDateTime,
+        currentSessionDateTime,
+    })
+
+    if(validationError){
+        setError(validationError);
+        return;
+    }
+
+    console.log("Valid Reschedule: ", {
+        date,
+        time,
+        reason,
+        selectedDateTime,
+    });
+
+  }
 
   return (
     <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -24,7 +65,7 @@ export const RescheduleForm = ({ onCancel }: RescheduleFormProps) => {
         Request Reschedule
       </h2>
 
-      <form className="space-y-5">
+      <form className="space-y-5" onSubmit={handleSubmit}>
         <div>
           <label
             htmlFor="date"
@@ -101,6 +142,7 @@ export const RescheduleForm = ({ onCancel }: RescheduleFormProps) => {
             Request Reschedule
           </button>
         </div>
+        {error && (<p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>)}
       </form>
     </div>
   );
