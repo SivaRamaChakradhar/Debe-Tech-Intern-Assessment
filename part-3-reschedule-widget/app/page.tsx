@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SessionCard }from "@/components/SessionCard";
 import { RescheduleForm } from "@/components/RescheduleForm";
 import { upcomingSessions } from "@/lib/mockSessions";
+import { TutoringSession } from "@/types/session";
 
 export default function Home() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
@@ -44,6 +45,7 @@ export default function Home() {
 
         {selectedSession && (
           <RescheduleForm
+            session={selectedSession}
             onCancel={() => setSelectedSessionId(null)}
           />
         )}
