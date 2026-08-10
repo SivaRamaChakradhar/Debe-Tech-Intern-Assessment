@@ -2,7 +2,7 @@
 
 import { TutoringSession } from '@/types/session';
 import { validateRescheduleTime } from "@/lib/validation";
-import { localDateTimeToUTC } from '@/lib/dateTime';
+import { localDateTimeToUTC, getBrowserTimeZoneOffset, isWithinRescheduleLockout } from '@/lib/dateTime';
 import { RescheduleReason, RescheduleRequest } from '@/types/reschedule';
 import { requestReschedule } from "@/function/requestreschedule";
 import { useState } from 'react';
@@ -21,6 +21,8 @@ const reasons: {
   { id: "TIME_ZONE", displayName: "Time zone" },
   { id: "OTHER", displayName: "Other" },
 ];
+
+
 
 export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
   const [date, setDate] = useState("");
@@ -48,7 +50,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
       const utcDateTime = localDateTimeToUTC(
         date,
         time,
-        "+05:30",
+        getBrowserTimeZoneOffset(),
       );
 
       const selectedDateTime = new Date(utcDateTime);
@@ -81,6 +83,7 @@ export const RescheduleForm = ({ session, onCancel }: RescheduleFormProps) => {
 
       setDate("");
       setTime("");
+      setReason("");
     } catch (error) {
       console.error("Failed to prepare reschedule:", error);
       setError("Unable to process the selected date and time.");
