@@ -120,7 +120,7 @@ npm run build
 
 Loom video:
 
--https://www.loom.com/share/17623e6647db4aff9644ba4621cfab01
+-[https://www.loom.com/share/17623e6647db4aff9644ba4621cfab01](URL)
 
 The walkthrough explains the implementation, including the two-hour lockout, local-time/UTC decision, validation flow, and an intentional timezone-conversion bug demonstration.
 
